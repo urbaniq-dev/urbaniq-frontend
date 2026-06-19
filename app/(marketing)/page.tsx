@@ -498,7 +498,7 @@ export default function LandingPage() {
       <footer className="bg-background py-8 border-t">
         <div className="container mx-auto px-4 max-w-screen-xl flex flex-col md:flex-row justify-between items-center text-xs text-muted-foreground">
           <div className="mb-4 md:mb-0">
-            <span className="font-bold text-foreground">Urbaniq</span> © 2024 Urbaniq Real Estate Technologies Inc. All rights reserved.
+            <span className="font-bold text-foreground">Urbaniq</span> © 2026 Urbaniq Real Estate Technologies Inc. All rights reserved.
           </div>
           <div className="flex gap-6">
             <Link href="#" className="hover:text-foreground">Privacy Policy</Link>
