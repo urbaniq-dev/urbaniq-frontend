@@ -14,34 +14,45 @@ interface Property {
   location: { city: string; state: string };
   price: number;
   status: string;
+  views?: number;
 }
 
 export default function OwnerDashboard() {
   const { user } = useAuthStore()
   const [properties, setProperties] = useState<Property[]>([])
+  const [stats, setStats] = useState({ inquiries: 0, upcomingVisits: 0, pendingOffers: 0 })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchProperties = async () => {
+    const fetchData = async () => {
       if (!user?._id) return
       try {
-        const res = await api.get(`/properties?ownerId=${user._id}`)
-        setProperties(res.data)
+        const [propRes, inqRes, visRes, offRes] = await Promise.all([
+          api.get(`/properties?ownerId=${user._id}`),
+          api.get('/interactions/inquiries'),
+          api.get('/interactions/visits'),
+          api.get('/interactions/offers')
+        ])
+        setProperties(Array.isArray(propRes.data.data) ? propRes.data.data : [])
+        
+        const upcomingVisitsCount = visRes.data.filter((v: any) => new Date(v.date).getTime() > new Date().getTime()).length
+        const pendingOffersCount = offRes.data.filter((o: any) => o.status === 'Pending').length
+        setStats({ inquiries: inqRes.data.length, upcomingVisits: upcomingVisitsCount, pendingOffers: pendingOffersCount })
       } catch (error) {
-        console.error("Failed to fetch properties:", error)
+        console.error("Failed to fetch dashboard data:", error)
       } finally {
         setLoading(false)
       }
     }
     
-    fetchProperties()
+    fetchData()
   }, [user])
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(price)
   }
 
-  const activeCount = properties.filter(p => p.status === 'Available').length
+  const activeCount = properties.filter(p => p.status === 'Available' || p.status === 'Published').length
 
   return (
     <div className="space-y-6">
@@ -57,7 +68,7 @@ export default function OwnerDashboard() {
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Properties</CardTitle>
@@ -76,10 +87,26 @@ export default function OwnerDashboard() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pending Approvals</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{loading ? "..." : properties.filter(p => p.status === 'Pending Approval').length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pending Offers</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{loading ? "..." : stats.pendingOffers}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Inquiries</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-muted-foreground">Coming Soon</div>
+            <div className="text-2xl font-bold">{loading ? "..." : stats.inquiries}</div>
           </CardContent>
         </Card>
         <Card>
@@ -87,9 +114,70 @@ export default function OwnerDashboard() {
             <CardTitle className="text-sm font-medium">Upcoming Visits</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-muted-foreground">Coming Soon</div>
+            <div className="text-2xl font-bold">{loading ? "..." : stats.upcomingVisits}</div>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Property Views</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{loading ? "..." : properties.reduce((acc, p) => acc + (p.views || 0), 0)}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2 mt-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Activities</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-8">
+              <div className="flex items-center">
+                <span className="relative flex h-2 w-2 mr-4 flex-shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                </span>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium leading-none">New inquiry on Luxury Villa</p>
+                  <p className="text-sm text-muted-foreground">Just now</p>
+                </div>
+              </div>
+              <div className="flex items-center">
+                <span className="flex h-2 w-2 mr-4 rounded-full bg-muted-foreground flex-shrink-0"></span>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium leading-none">Agent accepted assignment request</p>
+                  <p className="text-sm text-muted-foreground">2 hours ago</p>
+                </div>
+              </div>
+              <div className="flex items-center">
+                <span className="flex h-2 w-2 mr-4 rounded-full bg-muted-foreground flex-shrink-0"></span>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium leading-none">Downtown Apartment published</p>
+                  <p className="text-sm text-muted-foreground">Yesterday</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="bg-primary/10 border border-primary/20 rounded-xl p-6 flex flex-col justify-center relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <div className="relative z-10 mb-4">
+            <h3 className="text-xl font-bold text-primary mb-2">Tired of managing everything yourself?</h3>
+            <p className="text-sm text-muted-foreground max-w-sm">
+              We have certified Urbaniq Agents ready to make your life easier. Let a professional handle your property inquiries, scheduling, and negotiations so you can relax.
+            </p>
+          </div>
+          <Button className="w-fit relative z-10 shadow-md" asChild>
+            <Link href="/dashboard/owner/properties/new">
+              Assign an Agent
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <Card className="mt-8">
@@ -124,12 +212,18 @@ export default function OwnerDashboard() {
                        <td className="px-4 py-3 text-muted-foreground">{property.location.city}, {property.location.state}</td>
                        <td className="px-4 py-3 font-medium">{formatPrice(property.price)}</td>
                        <td className="px-4 py-3">
-                         <span className={`px-2 py-1 rounded-full text-xs font-semibold ${property.status === 'Available' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                         <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                            property.status === 'Available' || property.status === 'Published' ? 'bg-green-100 text-green-700' : 
+                            property.status === 'Pending Approval' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-gray-100 text-gray-700'
+                         }`}>
                            {property.status}
                          </span>
                        </td>
                        <td className="px-4 py-3">
-                         <Button variant="ghost" size="sm">Edit</Button>
+                         <Button variant="ghost" size="sm" asChild>
+                           <Link href={`/dashboard/owner/properties/${property._id}`}>Details</Link>
+                         </Button>
                        </td>
                      </tr>
                    ))

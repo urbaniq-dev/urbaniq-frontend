@@ -27,7 +27,7 @@ export default function LoginPage() {
       setAuth(user, token)
       
       if (user.role === 'Buyer') {
-        router.push('/')
+        router.push('/dashboard/buyer')
       } else {
         router.push(`/dashboard/${user.role.toLowerCase()}`)
       }

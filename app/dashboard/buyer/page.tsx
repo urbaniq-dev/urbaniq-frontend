@@ -1,67 +1,113 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Building, MapPin, Search } from "lucide-react"
+import { Building, MapPin, Search, Calendar, MessageSquare, Heart, BarChart } from "lucide-react"
+import { useAuthStore } from "@/store/authStore"
+import api from "@/lib/api"
 
 export default function BuyerDashboard() {
+  const { user } = useAuthStore()
+  const [visits, setVisits] = useState<any[]>([])
+  const [inquiries, setInquiries] = useState<any[]>([])
+  const [favorites, setFavorites] = useState<any[]>([])
+  const [offers, setOffers] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [visitsRes, inquiriesRes, favsRes, offersRes] = await Promise.all([
+          api.get("/interactions/visits"),
+          api.get("/interactions/inquiries"),
+          api.get("/users/favorites"),
+          api.get("/interactions/offers")
+        ])
+        setVisits(visitsRes.data || [])
+        setInquiries(inquiriesRes.data || [])
+        setFavorites(favsRes.data || [])
+        setOffers(offersRes.data || [])
+      } catch (err) {
+        console.error("Failed to fetch dashboard data:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
+
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-8">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Buyer Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back! Here's an overview of your activity.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Welcome back, {user?.firstName}!</h1>
+          <p className="text-muted-foreground mt-1">Find and schedule visits for your dream property.</p>
         </div>
-        <Button>
-          <Search className="h-4 w-4 mr-2" /> Find Properties
+        <Button asChild size="lg">
+          <Link href="/properties">
+            <Search className="h-4 w-4 mr-2" /> Browse Properties
+          </Link>
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Saved Properties</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">12</div>
-          </CardContent>
-        </Card>
+      <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Scheduled Visits</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3</div>
+            <div className="text-2xl font-bold">{loading ? "..." : visits.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">Upcoming property viewings</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Inquiries</CardTitle>
+            <CardTitle className="text-sm font-medium">Sent Inquiries</CardTitle>
+            <MessageSquare className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">5</div>
+            <div className="text-2xl font-bold">{loading ? "..." : inquiries.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">Questions sent to agents/owners</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Saved Properties</CardTitle>
+            <Heart className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{loading ? "..." : favorites.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">Properties you've shortlisted</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">My Offers</CardTitle>
+            <BarChart className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{loading ? "..." : offers.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">Cash offers submitted</p>
           </CardContent>
         </Card>
       </div>
 
-      <h2 className="text-xl font-bold mt-8 mb-4">Recently Saved</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {[1, 2, 3].map((i) => (
-          <Card key={i} className="overflow-hidden">
-             <div className="h-40 bg-muted flex items-center justify-center">
-                <Building className="h-8 w-8 text-muted-foreground/50" />
-             </div>
-             <CardContent className="p-4">
-                <div className="font-semibold truncate">Property {i}</div>
-                <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                  <MapPin className="h-3 w-3" /> Location {i}
-                </div>
-                <div className="mt-4 flex justify-between items-center">
-                   <div className="font-bold text-primary">$1,200,000</div>
-                   <Button variant="outline" size="sm">View</Button>
-                </div>
-             </CardContent>
-          </Card>
-        ))}
+      {/* CTA Banner */}
+      <div className="relative rounded-2xl overflow-hidden bg-primary p-8 md:p-12 text-primary-foreground flex flex-col md:flex-row items-center justify-between gap-6">
+        <div>
+          <h2 className="text-2xl font-bold mb-2">Ready to find your property?</h2>
+          <p className="opacity-80 max-w-lg">Browse thousands of verified listings and schedule a visit in just a few clicks using our interactive calendar.</p>
+        </div>
+        <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90 font-bold shrink-0">
+          <Link href="/properties">
+            <Search className="h-4 w-4 mr-2" /> View All Properties
+          </Link>
+        </Button>
       </div>
     </div>
   )
 }
+

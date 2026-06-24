@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Building2, UserCircle, LogOut } from "lucide-react"
+import { Building2, UserCircle, LogOut, LayoutDashboard } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuthStore } from "@/store/authStore"
 import { useRouter } from "next/navigation"
@@ -15,6 +15,11 @@ export function Navbar() {
     router.push('/')
   }
 
+  const getDashboardPath = () => {
+    if (!user) return '/login'
+    return `/dashboard/${user.role.toLowerCase()}`
+  }
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 max-w-screen-2xl items-center justify-between px-4 sm:px-8 mx-auto">
@@ -25,43 +30,58 @@ export function Navbar() {
               Urbaniq
             </span>
           </Link>
-          <nav className="hidden md:flex gap-6 ml-6">
-            <Link
-              href="/properties"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-            >
-              Properties
-            </Link>
-            <Link
-              href="/dashboard/agent"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-            >
-              For Agents
-            </Link>
-            <Link
-              href="/dashboard/owner"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-            >
-              For Owners
-            </Link>
-          </nav>
+          {/* Show marketing links only for unauthenticated users */}
+          {!user && (
+            <nav className="hidden md:flex gap-6 ml-6">
+              <Link
+                href="/properties"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              >
+                Properties
+              </Link>
+              <Link
+                href="/register?role=agent"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              >
+                For Agents
+              </Link>
+              <Link
+                href="/register?role=owner"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              >
+                For Owners
+              </Link>
+            </nav>
+          )}
+          {/* Show contextual links for authenticated users */}
+          {user && (
+            <nav className="hidden md:flex gap-6 ml-6">
+              <Link
+                href="/properties"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              >
+                Browse Properties
+              </Link>
+            </nav>
+          )}
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           {user ? (
-            <div className="flex items-center gap-4">
-              <span className="text-sm font-medium flex items-center gap-2 text-muted-foreground">
+            <div className="flex items-center gap-3">
+              <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
                 <UserCircle className="h-5 w-5" />
-                {user.firstName}
-              </span>
-              {user.role !== 'Buyer' && (
-                <Link href={`/dashboard/${user.role.toLowerCase()}`} className="text-sm font-medium hover:text-primary">
+                <span className="font-medium">{user.firstName}</span>
+                <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-semibold">{user.role}</span>
+              </div>
+              <Button asChild variant="outline" size="sm">
+                <Link href={getDashboardPath()}>
+                  <LayoutDashboard className="h-4 w-4 mr-2" />
                   Dashboard
                 </Link>
-              )}
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-destructive">
+                <LogOut className="h-4 w-4" />
               </Button>
             </div>
           ) : (
