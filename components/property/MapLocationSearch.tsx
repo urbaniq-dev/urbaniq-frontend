@@ -38,7 +38,7 @@ export interface SelectedLocation {
 interface MapLocationSearchProps {
   onLocationSelect: (location: SelectedLocation) => void;
   onClear: () => void;
-  initialLocation?: { lat: number; lng: number };
+  initialLocation?: { lat: number; lng: number; radius?: number };
 }
 
 interface NominatimResult {
@@ -89,7 +89,7 @@ export default function MapLocationSearch({
     initialLocation ? [initialLocation.lat, initialLocation.lng] : null
   );
   const [address, setAddress] = useState('');
-  const [radius, setRadius] = useState(10);
+  const [radius, setRadius] = useState(initialLocation?.radius || 10);
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState<NominatimResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);

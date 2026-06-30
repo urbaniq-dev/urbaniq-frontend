@@ -57,4 +57,8 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 export default api;

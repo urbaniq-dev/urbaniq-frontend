@@ -1,3 +1,7 @@
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 'use client';
 
 import React, { useEffect, useState, Suspense } from 'react';
@@ -119,4 +123,8 @@ export default function PublicPropertiesPage() {
       </Suspense>
     </div>
   );
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 }

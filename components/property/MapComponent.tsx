@@ -51,6 +51,7 @@ interface NominatimResult {
   lat: string;
   lon: string;
   address: any;
+  name?: string;
 }
 
 // Component to handle map center updates when props change
