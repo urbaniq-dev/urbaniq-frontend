@@ -7,6 +7,7 @@ interface PropertyState {
   currentProperty: IProperty | null;
   isLoading: boolean;
   error: string | null;
+  totalCount: number;
   fetchProperties: (filters?: IPropertyFilter) => Promise<void>;
   fetchAgentProperties: (filters?: IPropertyFilter) => Promise<void>;
   fetchPropertyById: (id: string) => Promise<void>;
@@ -20,12 +21,17 @@ export const usePropertyStore = create<PropertyState>((set) => ({
   currentProperty: null,
   isLoading: false,
   error: null,
+  totalCount: 0,
   
   fetchProperties: async (filters?: IPropertyFilter) => {
     set({ isLoading: true, error: null });
     try {
       const response = await api.get('/properties', { params: filters });
-      set({ properties: response.data.data || response.data, isLoading: false });
+      set({ 
+        properties: response.data.data?.properties || response.data.data || response.data, 
+        totalCount: response.data.data?.meta?.total || 0,
+        isLoading: false 
+      });
     } catch (error: any) {
       set({ 
         error: error.response?.data?.message || 'Failed to fetch properties',
@@ -38,7 +44,11 @@ export const usePropertyStore = create<PropertyState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await api.get('/properties/agent', { params: filters });
-      set({ properties: response.data.data || response.data, isLoading: false });
+      set({ 
+        properties: response.data.data?.properties || response.data.data || response.data, 
+        totalCount: response.data.data?.meta?.total || 0,
+        isLoading: false 
+      });
     } catch (error: any) {
       set({ 
         error: error.response?.data?.message || 'Failed to fetch your properties',

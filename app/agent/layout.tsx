@@ -52,12 +52,9 @@ export default function AgentLayout({
   }
 
   const navLinks = [
-    { href: "/agent", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/agent/properties", label: "My Properties", icon: Home },
-    { href: "/agent/profile", label: "Public Profile", icon: Settings },
-    { href: "/agent/clients", label: "Clients", icon: Users },
-    { href: "/agent/inquiries", label: "Inquiries", icon: MessageSquare },
-    { href: "/agent/calendar", label: "Calendar", icon: Calendar },
+    { href: '/agent', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/agent/properties', label: 'My Properties', icon: Home },
+    { href: '/agent/profile', label: 'Public Profile', icon: Settings },
   ]
 
   const SidebarContent = () => (

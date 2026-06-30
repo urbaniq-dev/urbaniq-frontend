@@ -19,7 +19,16 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.push('/agent') // Or dashboard based on role, but we don't have role here easily unless we get user. Let's just push to /
+      const { user } = useAuthStore.getState();
+      if (user?.role === 'Buyer') {
+        router.push('/')
+      } else if (user?.role === 'Agent') {
+        router.push('/agent')
+      } else if (user?.role) {
+        router.push(`/dashboard/${user.role.toLowerCase()}`)
+      } else {
+        router.push('/')
+      }
     }
   }, [isLoading, isAuthenticated, router])
 

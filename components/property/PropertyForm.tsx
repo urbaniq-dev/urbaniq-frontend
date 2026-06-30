@@ -235,35 +235,15 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ initialData, onSubmi
 
       <div className="border-t pt-6 mt-6">
         <h3 className="text-lg font-semibold mb-4">Location</h3>
+        <p className="text-sm text-muted-foreground mb-4">
+          Pin the exact location of your property on the map. We will automatically extract the address details.
+        </p>
         
         <div className="mb-6">
           <MapComponent 
             locationData={formData.location} 
             onChange={handleLocationChange} 
           />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Address</label>
-            <Input required name="location.address" value={formData.location.address} onChange={handleChange} placeholder="Address" />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">City</label>
-            <Input required name="location.city" value={formData.location.city} onChange={handleChange} placeholder="City" />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">State</label>
-            <Input required name="location.state" value={formData.location.state} onChange={handleChange} placeholder="State" />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Country</label>
-            <Input required name="location.country" value={formData.location.country} onChange={handleChange} placeholder="Country" />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Zip Code</label>
-            <Input name="location.zipCode" value={formData.location.zipCode} onChange={handleChange} placeholder="Zip Code" />
-          </div>
         </div>
       </div>
 

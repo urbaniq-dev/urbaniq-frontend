@@ -5,6 +5,7 @@ const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
 
 const api = axios.create({
   baseURL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -25,8 +26,13 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // If error is 401 and we haven't retried yet
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Skip token refresh for auth endpoints to prevent loops
+    const isAuthEndpoint = originalRequest.url?.includes('/auth/login') || 
+                           originalRequest.url?.includes('/auth/register') ||
+                           originalRequest.url?.includes('/auth/refresh');
+
+    // If error is 401 and we haven't retried yet and it's not an auth endpoint
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       originalRequest._retry = true;
 
       try {
@@ -38,8 +44,11 @@ api.interceptors.response.use(
       } catch (refreshError) {
         // Refresh failed, clear user session
         if (typeof window !== 'undefined') {
-          // No need to clear localStorage, just redirect to login
-          window.location.href = '/login';
+          // Avoid infinite redirect loops if we are already on public pages
+          const publicPaths = ['/login', '/register', '/'];
+          if (!publicPaths.includes(window.location.pathname)) {
+            window.location.href = '/login';
+          }
         }
         return Promise.reject(refreshError);
       }

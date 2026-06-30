@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { MapPin, Bed, Bath, Square, CheckCircle2, Phone, Mail, User } from 'lucide-react';
+import { MapPin, Bed, Bath, Square, CheckCircle2, Phone, Mail, User, MessageCircle } from 'lucide-react';
 import { usePropertyStore } from '@/store/propertyStore';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -37,6 +37,12 @@ export default function PropertyDetailPage() {
       </div>
     );
   }
+
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5001';
+  const getImgSrc = (url: string | undefined) => {
+    if (!url) return null;
+    return url.startsWith('http') ? url : `${BASE_URL}${url}`;
+  };
 
   return (
     <div className="min-h-screen bg-muted/10 pb-20 pt-10">
@@ -182,8 +188,8 @@ export default function PropertyDetailPage() {
                   <div className="space-y-6">
                     <div className="flex items-center gap-4">
                       <div className="w-16 h-16 bg-muted rounded-full overflow-hidden relative">
-                        {property.agentId.profileImage ? (
-                           <Image src={property.agentId.profileImage} alt="Agent" fill className="object-cover" />
+                        {getImgSrc((property.agentId as any)?.agentProfile?.profileImage || property.agentId.profileImage) ? (
+                           <Image src={getImgSrc((property.agentId as any)?.agentProfile?.profileImage || property.agentId.profileImage)!} alt="Agent" fill className="object-cover" unoptimized />
                         ) : (
                            <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary">
                              <User className="w-8 h-8" />
@@ -196,17 +202,28 @@ export default function PropertyDetailPage() {
                       </div>
                     </div>
                     <div className="space-y-3 pt-4 border-t border-border">
-                      {property.agentId.phone && (
-                        <div className="flex items-center gap-3 text-muted-foreground">
-                          <Phone className="w-5 h-5" />
-                          <span>{property.agentId.phone}</span>
-                        </div>
+                      {((property.agentId as any)?.agentProfile?.phone || property.agentId.phone) && (
+                        <a href={`tel:${(property.agentId as any)?.agentProfile?.phone || property.agentId.phone}`} className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors">
+                          <Phone className="w-5 h-5 text-primary" />
+                          <span>{(property.agentId as any)?.agentProfile?.phone || property.agentId.phone}</span>
+                        </a>
+                      )}
+                      {(property.agentId as any)?.agentProfile?.whatsapp && (
+                        <a
+                          href={`https://wa.me/${(property.agentId as any).agentProfile.whatsapp.replace(/\D/g, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 text-muted-foreground hover:text-green-600 transition-colors"
+                        >
+                          <MessageCircle className="w-5 h-5 text-green-500" />
+                          <span>WhatsApp</span>
+                        </a>
                       )}
                       {property.agentId.email && (
-                        <div className="flex items-center gap-3 text-muted-foreground">
+                        <a href={`mailto:${property.agentId.email}`} className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors">
                           <Mail className="w-5 h-5" />
-                          <span>{property.agentId.email}</span>
-                        </div>
+                          <span className="truncate">{property.agentId.email}</span>
+                        </a>
                       )}
                     </div>
                   </div>

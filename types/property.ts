@@ -36,6 +36,7 @@ export interface IProperty {
   agentId?: IUserPopulated | any;
   createdAt?: string;
   updatedAt?: string;
+  distance?: number; // Calculated distance in km from search coordinate
 }
 
 export interface IPropertyFilter {
@@ -44,4 +45,16 @@ export interface IPropertyFilter {
   city?: string;
   propertyType?: string;
   bedrooms?: number;
+  bathrooms?: number;
+  minArea?: number;
+  maxArea?: number;
+  status?: string;
+  amenities?: string[];
+  furnished?: boolean;
+  sortBy?: 'newest' | 'price_asc' | 'price_desc' | 'popular' | 'nearest';
+  // Geo-based search
+  lat?: number;
+  lng?: number;
+  radius?: number; // km
+  address?: string; // the formatted address for display
 }

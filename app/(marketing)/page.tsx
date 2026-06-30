@@ -2,14 +2,65 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { Search, MapPin, Building, ChevronRight, CheckCircle2, Shield, Gem, Globe } from "lucide-react"
+import { Search, MapPin, Building, ChevronRight, CheckCircle2, Shield, Gem, Globe, LogOut, User, LayoutDashboard, Settings, Map, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useAuthStore } from "@/store/authStore"
+import dynamic from "next/dynamic"
+import { SelectedLocation } from "@/components/property/MapLocationSearch"
+
+const MapLocationSearch = dynamic(() => import('@/components/property/MapLocationSearch'), {
+  ssr: false,
+});
 
 export default function LandingPage() {
+  const router = useRouter()
+  const { user, isAuthenticated, logout } = useAuthStore()
+  const [city, setCity] = useState("")
+  const [propertyType, setPropertyType] = useState("Any Type")
+  const [priceRange, setPriceRange] = useState("Any Price")
+  const [showMapModal, setShowMapModal] = useState(false)
+  const [selectedLocation, setSelectedLocation] = useState<SelectedLocation | null>(null)
+  const [showDropdown, setShowDropdown] = useState(false)
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  const handleSearch = () => {
+    const params = new URLSearchParams()
+    if (selectedLocation) {
+      params.append("lat", selectedLocation.lat.toString())
+      params.append("lng", selectedLocation.lng.toString())
+      params.append("radius", selectedLocation.radius.toString())
+      params.append("address", selectedLocation.address)
+    } else if (city) {
+      params.append("city", city)
+    }
+
+    if (propertyType !== "Any Type") params.append("propertyType", propertyType)
+    
+    if (priceRange !== "Any Price") {
+      if (priceRange === "$100k - $500k") {
+        params.append("minPrice", "100000")
+        params.append("maxPrice", "500000")
+      } else if (priceRange === "$500k - $1M") {
+        params.append("minPrice", "500000")
+        params.append("maxPrice", "1000000")
+      } else if (priceRange === "$1M+") {
+        params.append("minPrice", "1000000")
+      }
+    }
+    
+    router.push(`/properties?${params.toString()}`)
+  }
+
   return (
     <div className="flex flex-col">
       {/* Hero Section & Custom Navbar */}
@@ -56,20 +107,82 @@ export default function LandingPage() {
           </nav>
 
           {/* Right Actions */}
-          <div className="flex items-center space-x-6 text-white font-medium">
+          <div className="flex items-center space-x-6 text-white font-medium relative">
             <div className="hidden sm:flex items-center space-x-1.5 cursor-pointer text-white/80 hover:text-white transition-colors">
-              <Globe className="w-4 h-4" />
-              <span className="text-[13px]">Eng</span>
             </div>
-            <div className="flex items-center space-x-5">
-              <Link href="/login" className="text-[13px] text-white/90 hover:text-white transition-colors">Log in</Link>
-              <Button 
-                asChild
-                className="bg-[#B8E66B] hover:bg-[#a5d15c] text-black rounded-full px-6 h-10 text-[13px] font-semibold shadow-sm transition-all"
-              >
-                <Link href="/register">Sign Up</Link>
-              </Button>
-            </div>
+            
+            {isClient && isAuthenticated && user ? (
+              <div className="relative">
+                <button
+                  suppressHydrationWarning
+                  onClick={() => setShowDropdown(!showDropdown)}
+                  className="flex items-center gap-2 hover:bg-white/10 px-3 py-1.5 rounded-full transition-colors border border-white/20"
+                >
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden border border-primary/30">
+                    {user.profileImage ? (
+                      <img src={user.profileImage} alt="User" className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="w-4 h-4 text-primary" />
+                    )}
+                  </div>
+                  <span className="text-[13px] font-medium hidden md:block">
+                    {user.firstName}
+                  </span>
+                </button>
+
+                <AnimatePresence>
+                  {showDropdown && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden text-black z-50"
+                    >
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <p className="text-sm font-semibold text-gray-900">{user.firstName} {user.lastName}</p>
+                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                      </div>
+                      <div className="py-2">
+                        {user.role === 'Agent' && (
+                          <Link href="/agent" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <LayoutDashboard className="w-4 h-4" /> Agent Dashboard
+                          </Link>
+                        )}
+                        <Link href={user.role === 'Agent' ? "/agent/profile" : "/profile"} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                          <User className="w-4 h-4" /> Profile
+                        </Link>
+                        <Link href="/settings" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                          <Settings className="w-4 h-4" /> Settings
+                        </Link>
+                      </div>
+                      <div className="py-2 border-t border-gray-100">
+                        <button 
+                          suppressHydrationWarning
+                          onClick={() => {
+                            logout();
+                            setShowDropdown(false);
+                            router.push('/login');
+                          }}
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left transition-colors"
+                        >
+                          <LogOut className="w-4 h-4" /> Log out
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-5">
+                <Link href="/login" className="text-[13px] text-white/90 hover:text-white transition-colors">Log in</Link>
+                <Button 
+                  asChild
+                  className="bg-[#B8E66B] hover:bg-[#a5d15c] text-black rounded-full px-6 h-10 text-[13px] font-semibold shadow-sm transition-all"
+                >
+                  <Link href="/register">Sign Up</Link>
+                </Button>
+              </div>
+            )}
           </div>
         </motion.div>
 
@@ -105,21 +218,35 @@ export default function LandingPage() {
           <div className="bg-white rounded-[24px] p-2 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] border border-gray-100/80 backdrop-blur-3xl">
             {/* Componentized Filter Tabs */}
             <div className="flex items-center gap-2 px-6 pt-5 pb-4 border-b border-gray-100">
-              <button className="px-5 py-2 rounded-full text-[13px] font-medium bg-[#B8E66B] text-black shadow-sm transition-all">All Properties</button>
-              <button className="px-5 py-2 rounded-full text-[13px] font-medium text-gray-500 hover:text-black hover:bg-gray-50 transition-colors">Houses</button>
-              <button className="px-5 py-2 rounded-full text-[13px] font-medium text-gray-500 hover:text-black hover:bg-gray-50 transition-colors">Apartments</button>
-              <button className="px-5 py-2 rounded-full text-[13px] font-medium text-gray-500 hover:text-black hover:bg-gray-50 transition-colors">Villas</button>
+              <button suppressHydrationWarning className="px-5 py-2 rounded-full text-[13px] font-medium bg-[#B8E66B] text-black shadow-sm transition-all">All Properties</button>
+              <button suppressHydrationWarning className="px-5 py-2 rounded-full text-[13px] font-medium text-gray-500 hover:text-black hover:bg-gray-50 transition-colors">Houses</button>
+              <button suppressHydrationWarning className="px-5 py-2 rounded-full text-[13px] font-medium text-gray-500 hover:text-black hover:bg-gray-50 transition-colors">Apartments</button>
+              <button suppressHydrationWarning className="px-5 py-2 rounded-full text-[13px] font-medium text-gray-500 hover:text-black hover:bg-gray-50 transition-colors">Villas</button>
             </div>
             
             {/* Unified Input Grid */}
             <div className="flex flex-col lg:flex-row items-center gap-4 p-4 lg:p-5">
               <div className="grid grid-cols-1 md:grid-cols-3 w-full gap-4 md:gap-0 bg-[#f9f9f9] rounded-[18px] p-2">
                 {/* Location Input */}
-                <div className="flex flex-col px-5 py-2.5 md:border-r border-gray-200/60 relative group cursor-text">
-                  <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 group-hover:text-black transition-colors">Location</label>
+                <div 
+                  className="flex flex-col px-5 py-2.5 md:border-r border-gray-200/60 relative group cursor-pointer"
+                  onClick={() => setShowMapModal(true)}
+                >
+                  <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 group-hover:text-black transition-colors cursor-pointer">Location</label>
                   <div className="flex items-center gap-2.5">
-                    <MapPin className="w-4 h-4 text-gray-400" />
-                    <input type="text" placeholder="City, region, or address" className="bg-transparent text-[14px] font-medium text-gray-900 w-full outline-none placeholder:text-gray-400 placeholder:font-normal" />
+                    <MapPin className="w-4 h-4 text-primary" />
+                    <div className="flex-1 w-full bg-transparent text-[14px] font-medium text-gray-900 outline-none flex items-center justify-between">
+                      {selectedLocation ? (
+                        <div className="flex flex-col">
+                          <span className="truncate pr-2 leading-none">{selectedLocation.address.split(',')[0]}</span>
+                          <span className="text-[10px] text-primary font-bold mt-1 leading-none">{selectedLocation.radius} km radius</span>
+                        </div>
+                      ) : city ? (
+                        <span className="truncate pr-2">{city}</span>
+                      ) : (
+                        <span className="text-gray-400 font-normal">Select a location</span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 
@@ -128,11 +255,16 @@ export default function LandingPage() {
                   <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 group-hover:text-black transition-colors">Property Type</label>
                   <div className="flex items-center gap-2.5">
                     <Building className="w-4 h-4 text-gray-400" />
-                    <select className="bg-transparent text-[14px] font-medium text-gray-900 w-full outline-none appearance-none cursor-pointer">
-                      <option>Any Type</option>
-                      <option>Residential</option>
-                      <option>Commercial</option>
-                      <option>Land</option>
+                    <select 
+                      suppressHydrationWarning 
+                      value={propertyType}
+                      onChange={(e) => setPropertyType(e.target.value)}
+                      className="bg-transparent text-[14px] font-medium text-gray-900 w-full outline-none appearance-none cursor-pointer"
+                    >
+                      <option value="Any Type">Any Type</option>
+                      <option value="Residential">Residential</option>
+                      <option value="Commercial">Commercial</option>
+                      <option value="Land">Land</option>
                     </select>
                   </div>
                 </div>
@@ -142,26 +274,90 @@ export default function LandingPage() {
                   <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 group-hover:text-black transition-colors">Price Range</label>
                   <div className="flex items-center gap-2.5">
                     <span className="text-gray-400 font-medium text-[14px]">$</span>
-                    <select className="bg-transparent text-[14px] font-medium text-gray-900 w-full outline-none appearance-none cursor-pointer">
-                      <option>Any Price</option>
-                      <option>$100k - $500k</option>
-                      <option>$500k - $1M</option>
-                      <option>$1M+</option>
+                    <select 
+                      suppressHydrationWarning 
+                      value={priceRange}
+                      onChange={(e) => setPriceRange(e.target.value)}
+                      className="bg-transparent text-[14px] font-medium text-gray-900 w-full outline-none appearance-none cursor-pointer"
+                    >
+                      <option value="Any Price">Any Price</option>
+                      <option value="$100k - $500k">$100k - $500k</option>
+                      <option value="$500k - $1M">$500k - $1M</option>
+                      <option value="$1M+">$1M+</option>
                     </select>
                   </div>
                 </div>
               </div>
               
               {/* Secondary CTA Button */}
-              <Link href="/properties" className="w-full lg:w-auto shrink-0">
+              <div className="w-full lg:w-auto shrink-0">
                 <Button 
+                  suppressHydrationWarning
+                  onClick={handleSearch}
                   className="bg-[#B8E66B] hover:bg-[#a5d15c] text-black rounded-[16px] px-8 h-[64px] text-[14px] font-bold w-full shadow-lg flex items-center justify-center gap-2 transition-transform hover:scale-[1.02]"
                 >
                   <Search className="w-4 h-4" /> 
                   <span>Search Properties</span>
                 </Button>
-              </Link>
+              </div>
             </div>
+
+            {/* Map Search Panel Overlay */}
+            <AnimatePresence>
+              {showMapModal && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute left-0 right-0 top-full mt-4 bg-white rounded-2xl shadow-2xl border border-gray-100/80 p-4 sm:p-5 z-50"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-[15px] font-bold text-gray-900">Search by Location</h3>
+                      <p className="text-[12px] text-gray-400 mt-0.5">
+                        Pin a location on the map to find nearby properties.
+                      </p>
+                    </div>
+                    <button
+                      suppressHydrationWarning
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowMapModal(false);
+                      }}
+                      className="text-gray-400 hover:text-gray-700 transition-colors p-1"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <MapLocationSearch
+                    onLocationSelect={(loc) => {
+                      setSelectedLocation(loc);
+                      setCity('');
+                    }}
+                    onClear={() => {
+                      setSelectedLocation(null);
+                    }}
+                    initialLocation={selectedLocation ? { lat: selectedLocation.lat, lng: selectedLocation.lng, radius: selectedLocation.radius } : undefined}
+                  />
+                  {selectedLocation && (
+                    <div className="mt-4 flex items-center justify-end">
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowMapModal(false);
+                        }}
+                        size="sm"
+                        className="bg-[#B8E66B] hover:bg-[#a5d15c] text-black font-semibold rounded-full px-6"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
+                        Apply Location
+                      </Button>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </motion.div>
       </div>
