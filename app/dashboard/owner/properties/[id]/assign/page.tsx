@@ -46,7 +46,7 @@ export default function AssignAgentPage() {
     if (id) fetchData()
   }, [id])
 
-  const filteredAgents = agents.filter(a => 
+  const filteredAgents = agents.filter(a =>
     `${a.firstName} ${a.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
     a.email.toLowerCase().includes(searchTerm.toLowerCase())
   )
@@ -130,11 +130,10 @@ export default function AssignAgentPage() {
                 <div className="text-center py-8 text-muted-foreground">No agents found matching your search.</div>
               ) : (
                 filteredAgents.map(agent => (
-                  <div 
-                    key={agent._id} 
-                    className={`flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                      selectedAgentId === agent._id ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
-                    }`}
+                  <div
+                    key={agent._id}
+                    className={`flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedAgentId === agent._id ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                      }`}
                     onClick={() => setSelectedAgentId(agent._id)}
                   >
                     <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center shrink-0">
@@ -150,8 +149,8 @@ export default function AssignAgentPage() {
                       </div>
                       <p className="text-sm text-muted-foreground truncate">{agent.email}</p>
                       <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1"><MapPin className="w-3 h-3"/> Local Expert</span>
-                        <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-500"/> Verified</span>
+                        <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> Local Expert</span>
+                        <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-500" /> Verified</span>
                       </div>
                     </div>
                     <div className="shrink-0 self-center">
@@ -191,10 +190,10 @@ export default function AssignAgentPage() {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Commission Note (Optional)</label>
-                <Input 
-                  value={commissionInfo} 
-                  onChange={(e) => setCommissionInfo(e.target.value)} 
-                  placeholder="e.g. 5% of final sale price" 
+                <Input
+                  value={commissionInfo}
+                  onChange={(e) => setCommissionInfo(e.target.value)}
+                  placeholder="e.g. 5% of final sale price"
                 />
                 <p className="text-xs text-muted-foreground">This note will be attached to the request.</p>
               </div>
@@ -205,10 +204,10 @@ export default function AssignAgentPage() {
                 </div>
               )}
 
-              <Button 
-                className="w-full" 
-                size="lg" 
-                onClick={handleSubmit} 
+              <Button
+                className="w-full"
+                size="lg"
+                onClick={handleSubmit}
                 disabled={!selectedAgentId || submitting}
               >
                 {submitting ? "Sending Request..." : "Send Request to Agent"}

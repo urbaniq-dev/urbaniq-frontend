@@ -51,15 +51,21 @@ export default function OwnerVisitsPage() {
   useEffect(() => {
     if (!socket) return
 
+    // New visit scheduled by a buyer
     const handleNewInteraction = (data: any) => {
-      if (data.type === 'Visit') {
-        fetchVisits()
-      }
+      if (data.type === 'Visit') fetchVisits()
+    }
+
+    // Visit status updated (e.g. buyer cancelled, agent marked complete)
+    const handleVisitUpdated = (updatedVisit: any) => {
+      setVisits(prev => prev.map(v => v._id === updatedVisit._id ? { ...v, status: updatedVisit.status } : v))
     }
 
     socket.on('new_interaction', handleNewInteraction)
+    socket.on('visit_updated', handleVisitUpdated)
     return () => {
       socket.off('new_interaction', handleNewInteraction)
+      socket.off('visit_updated', handleVisitUpdated)
     }
   }, [socket])
 
@@ -92,8 +98,8 @@ export default function OwnerVisitsPage() {
   return (
     <div className="space-y-6 pb-12">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Schedule Dashboard</h1>
-        <p className="text-muted-foreground">Manage your upcoming property viewings and client meetings.</p>
+        <h1 className="text-3xl font-bold tracking-tight">Visit Requests</h1>
+        <p className="text-muted-foreground">Review and manage viewing requests from buyers for your properties.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -203,13 +209,6 @@ export default function OwnerVisitsPage() {
                               </Button>
                               <Button variant="outline" size="sm" onClick={() => updateVisitStatus(visit._id, 'Rejected')} className="text-red-600 hover:bg-red-50 hover:text-red-700">
                                 Reject
-                              </Button>
-                            </div>
-                          )}
-                          {visit.status === 'Accepted' && (
-                            <div className="flex gap-2 shrink-0">
-                               <Button variant="outline" size="sm" onClick={() => updateVisitStatus(visit._id, 'Completed')} className="gap-1.5 border-blue-200 hover:bg-blue-50 text-blue-700">
-                                Mark Completed
                               </Button>
                             </div>
                           )}

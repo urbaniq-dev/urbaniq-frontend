@@ -108,6 +108,7 @@ export default function PropertiesListingPage() {
                       src={property.images?.[0] || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"}
                       alt={property.title}
                       fill
+                      unoptimized
                       className="object-cover group-hover:scale-105 transition-transform duration-700"
                     />
                     <div className="absolute top-4 left-4 bg-background/90 backdrop-blur-sm px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-md">

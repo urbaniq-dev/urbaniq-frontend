@@ -1,14 +1,13 @@
 import Link from "next/link"
-import { Building2 } from "lucide-react"
+import { Logo } from "@/components/ui/Logo"
 
 export function Footer() {
   return (
     <footer className="border-t py-12 bg-muted/40">
       <div className="container px-4 sm:px-8 max-w-screen-2xl mx-auto grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-4">
         <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2 mb-4">
-            <Building2 className="h-6 w-6 text-primary" />
-            <span className="font-bold text-xl tracking-tight">Urbaniq</span>
+          <div className="mb-4">
+            <Logo height={40} asLink={false} />
           </div>
           <p className="text-sm text-muted-foreground">
             Premium real estate management platform for modern property transactions.

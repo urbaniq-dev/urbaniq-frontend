@@ -145,6 +145,7 @@ export default function PropertyDetailPage() {
           src={property.images?.[0] || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2075&q=80"}
           alt={property.title}
           fill
+          unoptimized={true}
           className="object-cover opacity-80"
           priority
         />
@@ -239,9 +240,9 @@ export default function PropertyDetailPage() {
                       <div className="h-20 w-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
                         <CheckCircle2 className="h-10 w-10" />
                       </div>
-                      <h3 className="text-2xl font-bold mb-2">Visit Scheduled!</h3>
+                      <h3 className="text-2xl font-bold mb-2">Request Submitted!</h3>
                       <p className="text-muted-foreground mb-6">
-                        Your request for {selectedDate?.toLocaleDateString()} at {selectedTime} has been confirmed. The agent will contact you shortly.
+                        Your visit request for {selectedDate?.toLocaleDateString()} at {selectedTime} is <strong>pending agent confirmation</strong>. You'll be notified once it's accepted.
                       </p>
                       <Button onClick={() => router.push("/dashboard/buyer/visits")} className="w-full">
                         View in Dashboard

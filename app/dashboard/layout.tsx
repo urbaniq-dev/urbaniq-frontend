@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import { Building2, LayoutDashboard, Heart, Calendar, MessageSquare, Settings, LogOut, Plus, BarChart, Home, DollarSign } from "lucide-react"
 import { useAuthStore } from "@/store/authStore"
+import { Logo } from "@/components/ui/Logo"
 
 export default function DashboardLayout({
   children,
@@ -56,11 +57,8 @@ export default function DashboardLayout({
     <div className="flex h-screen bg-muted/20 overflow-hidden">
       {/* Sidebar */}
       <aside className="hidden md:flex w-64 flex-col border-r bg-background h-full">
-        <div className="flex h-16 items-center px-6 border-b flex-shrink-0">
-          <Link href="/" className="flex items-center space-x-2">
-            <Building2 className="h-6 w-6 text-primary" />
-            <span className="font-bold text-xl tracking-tight">Urbaniq</span>
-          </Link>
+        <div className="flex h-16 items-center px-4 border-b flex-shrink-0">
+          <Logo height={44} />
         </div>
         
         <div className="flex-1 overflow-y-auto py-4">

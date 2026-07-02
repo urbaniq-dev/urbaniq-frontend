@@ -1,10 +1,11 @@
 "use client"
 
 import Link from "next/link"
-import { Building2, UserCircle, LogOut, LayoutDashboard } from "lucide-react"
+import { UserCircle, LogOut, LayoutDashboard } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuthStore } from "@/store/authStore"
 import { useRouter } from "next/navigation"
+import { Logo } from "@/components/ui/Logo"
 
 export function Navbar() {
   const { user, logout } = useAuthStore()
@@ -21,15 +22,10 @@ export function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b bg-background">
       <div className="container flex h-16 max-w-screen-2xl items-center justify-between px-4 sm:px-8 mx-auto">
         <div className="flex items-center gap-2">
-          <Link href="/" className="flex items-center space-x-2">
-            <Building2 className="h-6 w-6 text-primary" />
-            <span className="font-bold text-xl inline-block tracking-tight">
-              Urbaniq
-            </span>
-          </Link>
+          <Logo height={44} />
           {/* Show marketing links only for unauthenticated users */}
           {!user && (
             <nav className="hidden md:flex gap-6 ml-6">

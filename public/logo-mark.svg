@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 100" fill="none">
+  <!-- Outer top arc -->
+  <path d="M20 18 Q40 4 60 18" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+  <!-- Second arc -->
+  <path d="M14 30 Q40 12 66 30" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+  <!-- Middle S-curve left -->
+  <path d="M12 46 Q28 36 28 50 Q28 64 14 68" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+  <!-- Middle S-curve right -->
+  <path d="M68 46 Q52 36 52 50 Q52 64 66 68" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+  <!-- Inner leaf/eye shape -->
+  <path d="M32 50 Q40 42 48 50 Q40 58 32 50Z" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+  <!-- Bottom arc left -->
+  <path d="M18 78 Q28 88 40 90" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+  <!-- Bottom arc right -->
+  <path d="M62 78 Q52 88 40 90" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+  <!-- Dots left -->
+  <circle cx="8" cy="42" r="3.5" fill="currentColor"/>
+  <circle cx="8" cy="58" r="3.5" fill="currentColor"/>
+  <!-- Dots right -->
+  <circle cx="72" cy="42" r="3.5" fill="currentColor"/>
+  <circle cx="72" cy="58" r="3.5" fill="currentColor"/>
+</svg>
